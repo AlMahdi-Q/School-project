@@ -47,7 +47,7 @@ Python 3.x
 
 School Management System
 
-This project is a simple system for managing students and lessons in a school. Data is stored in an SQLite database, and the system allows users to add students, delete them, update their information, and view their details.
+The system functions to manage school students together with their lesson scheduling activities. The system stores data within an SQLite database structure while enabling users to execute operations such as student addition and deletion and information updating as well as data details viewing.
 
 Features
 
