@@ -3,6 +3,7 @@
 هذا المشروع عبارة عن نظام بسيط لإدارة الطلاب والدروس في مدرسة. يتم تخزين البيانات في قاعدة بيانات SQLite، ويتيح النظام للمستخدم إضافة طلاب، حذفهم، تعديل معلوماتهم، وعرض معلوماتهم.
 
 الميزات:
+
 إضافة طالب: إدخال بيانات الطالب (الرقم، الاسم، الكنية، العمر، الصف، تاريخ التسجيل) والدروس التي يسجل فيها.
 
 حذف طالب: حذف طالب من قاعدة البيانات بناءً على رقمه.
@@ -12,6 +13,7 @@
 عرض معلومات الطالب: عرض بيانات الطالب والدروس المسجل فيها.
 
 هيكل قاعدة البيانات:
+
 جدول students:
 
 student_number: رقم الطالب (مفتاح أساسي).
@@ -39,13 +41,16 @@ Python 3.x
 مكتبة sqlite3 (مضمنة مع Python).
 
 المؤلف:
+
 المهدي القرني
 
 
 School Management System
+
 This project is a simple system for managing students and lessons in a school. Data is stored in an SQLite database, and the system allows users to add students, delete them, update their information, and view their details.
 
 Features
+
 Add a student: Enter student details (number, name, surname, age, class, registration date) and the lessons they are enrolled in.
 
 Delete a student: Remove a student from the database based on their number.
@@ -55,6 +60,7 @@ Update a student: Modify student details and their enrolled lessons.
 View student information: Display student details and their enrolled lessons.
 
 Database Structure
+
 students table:
 
 student_number: Student number (primary key).
@@ -76,6 +82,7 @@ student_number: Student number (foreign key).
 lesson_name: Lesson name.
 
 Requirements
+
 Python 3.x
 
 sqlite3 library (included with Python).
