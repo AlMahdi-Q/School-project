@@ -1,8 +1,9 @@
 import sqlite3
 
-# الاتصال بقاعدة البيانات وإنشاء الجداول
+
 conn = sqlite3.connect('school.db')
 c = conn.cursor()
+
 
 c.execute('''CREATE TABLE IF NOT EXISTS students
              (student_number INTEGER PRIMARY KEY,
@@ -12,173 +13,288 @@ c.execute('''CREATE TABLE IF NOT EXISTS students
               class TEXT,
               registration_date TEXT)''')
 
-c.execute('''CREATE TABLE IF NOT EXISTS lessons
+c.execute('''CREATE TABLE IF NOT EXISTS lessons_list
+             (lesson_id INTEGER PRIMARY KEY AUTOINCREMENT,
+              lesson_name TEXT UNIQUE)''')
+
+c.execute('''CREATE TABLE IF NOT EXISTS student_lessons
              (student_number INTEGER,
-              lesson_name TEXT,
+              lesson_id INTEGER,
               FOREIGN KEY(student_number) REFERENCES students(student_number),
-              PRIMARY KEY(student_number, lesson_name))''')
+              FOREIGN KEY(lesson_id) REFERENCES lessons_list(lesson_id),
+              PRIMARY KEY(student_number, lesson_id))''')
 conn.commit()
+
+
+def display_lessons():
+    c.execute("SELECT * FROM lessons_list")
+    lessons = c.fetchall()
+    print("\nAvailable Lessons:")
+    for lesson in lessons:
+        print(f"{lesson[0]}: {lesson[1]}")
+
+
+def add_lesson():
+    lesson_name = input("Enter new lesson name: ").strip()
+    try:
+        c.execute("INSERT INTO lessons_list (lesson_name) VALUES (?)", (lesson_name,))
+        conn.commit()
+        print("Lesson added successfully!")
+    except sqlite3.IntegrityError:
+        print("This lesson already exists!")
+
+
+def update_lesson():
+    display_lessons()
+    try:
+        lesson_id = int(input("Enter lesson ID to update: "))
+        new_name = input("Enter new lesson name: ").strip()
+
+        c.execute("UPDATE lessons_list SET lesson_name = ? WHERE lesson_id = ?",
+                  (new_name, lesson_id))
+        conn.commit()
+        print("Lesson updated successfully!" if c.rowcount > 0 else "Lesson not found!")
+    except ValueError:
+        print("Invalid input!")
+
+
+def delete_lesson():
+    display_lessons()
+    try:
+        lesson_id = int(input("Enter lesson ID to delete: "))
+
+
+        c.execute("DELETE FROM student_lessons WHERE lesson_id = ?", (lesson_id,))
+        c.execute("DELETE FROM lessons_list WHERE lesson_id = ?", (lesson_id,))
+        conn.commit()
+        print("Lesson deleted successfully!" if c.rowcount > 0 else "Lesson not found!")
+    except ValueError:
+        print("Invalid input!")
+
 
 def add_student():
     try:
-        student_number = int(input("رقم الطالب: "))
+        student_number = int(input("Student number: "))
     except ValueError:
-        print("رقم الطالب يجب أن يكون رقمًا صحيحًا.")
+        print("Student number must be an integer.")
         return
 
-    c.execute("SELECT * FROM students WHERE student_number=?", (student_number,))
-    if c.fetchone():
-        print("رقم الطالب موجود مسبقًا.")
+    if c.execute("SELECT * FROM students WHERE student_number=?", (student_number,)).fetchone():
+        print("Student number already exists.")
         return
 
-    name = input("الاسم: ")
-    surname = input("الكنية: ")
+    name = input("First name: ")
+    surname = input("Last name: ")
     try:
-        age = int(input("العمر: "))
+        age = int(input("Age: "))
     except ValueError:
-        print("العمر يجب أن يكون رقمًا صحيحًا.")
+        print("Age must be an integer.")
         return
-    class_ = input("الصف: ")
-    reg_date = input("تاريخ التسجيل (YYYY-MM-DD): ")
+    class_ = input("Class: ")
+    reg_date = input("Registration date (YYYY-MM-DD): ")
 
+    display_lessons()
     lessons = []
     while True:
-        lesson = input("أدخل اسم الدرس (أو اترك فارغًا لإنهاء): ").strip()
-        if not lesson:
-            break
-        if lesson not in lessons:
-            lessons.append(lesson)
-        else:
-            print("هذا الدرس مضاف مسبقًا.")
+        try:
+            lesson_id = input("Enter lesson ID to add (or 'done' to finish): ")
+            if lesson_id.lower() == 'done':
+                break
+            lesson_id = int(lesson_id)
+
+            if c.execute("SELECT * FROM lessons_list WHERE lesson_id=?", (lesson_id,)).fetchone():
+                lessons.append(lesson_id)
+            else:
+                print("Invalid lesson ID!")
+        except ValueError:
+            print("Please enter a valid number or 'done'")
 
     try:
         c.execute("INSERT INTO students VALUES (?, ?, ?, ?, ?, ?)",
                   (student_number, name, surname, age, class_, reg_date))
-        for lesson in lessons:
-            c.execute("INSERT INTO lessons VALUES (?, ?)", (student_number, lesson))
+
+        for lesson_id in lessons:
+            c.execute("INSERT INTO student_lessons VALUES (?, ?)",
+                      (student_number, lesson_id))
+
         conn.commit()
-        print("تمت إضافة الطالب بنجاح.")
+        print("Student added successfully!")
     except sqlite3.Error as e:
-        print("حدث خطأ:", e)
+        print("Error:", e)
         conn.rollback()
+
 
 def delete_student():
     try:
-        student_number = int(input("رقم الطالب المراد حذفه: "))
+        student_number = int(input("Enter student number to delete: "))
     except ValueError:
-        print("رقم الطالب يجب أن يكون رقمًا صحيحًا.")
+        print("Student number must be an integer.")
         return
 
-    c.execute("SELECT * FROM students WHERE student_number=?", (student_number,))
-    if not c.fetchone():
-        print("الطالب غير موجود.")
-        return
+    c.execute("DELETE FROM student_lessons WHERE student_number=?", (student_number,))
+    c.execute("DELETE FROM students WHERE student_number=?", (student_number,))
+    conn.commit()
+    print("Student deleted successfully!" if c.rowcount > 0 else "Student not found!")
 
-    try:
-        c.execute("DELETE FROM lessons WHERE student_number=?", (student_number,))
-        c.execute("DELETE FROM students WHERE student_number=?", (student_number,))
-        conn.commit()
-        print("تم حذف الطالب بنجاح.")
-    except sqlite3.Error as e:
-        print("حدث خطأ:", e)
-        conn.rollback()
 
 def update_student():
     try:
-        student_number = int(input("رقم الطالب المراد تعديله: "))
+        student_number = int(input("Enter student number to update: "))
     except ValueError:
-        print("رقم الطالب يجب أن يكون رقمًا صحيحًا.")
+        print("Student number must be an integer.")
         return
 
-    c.execute("SELECT * FROM students WHERE student_number=?", (student_number,))
-    student = c.fetchone()
+    student = c.execute("SELECT * FROM students WHERE student_number=?", (student_number,)).fetchone()
     if not student:
-        print("الطالب غير موجود.")
+        print("Student not found.")
         return
 
-    print("أدخل البيانات الجديدة (اترك الحقل فارغًا للحفاظ على القيمة الحالية):")
-    name = input(f"الاسم الحالي ({student[1]}): ") or student[1]
-    surname = input(f"الكنية الحالية ({student[2]}): ") or student[2]
-    age = input(f"العمر الحالي ({student[3]}): ") or student[3]
-    class_ = input(f"الصف الحالي ({student[4]}): ") or student[4]
-    reg_date = input(f"تاريخ التسجيل الحالي ({student[5]}): ") or student[5]
+    print("\nLeave blank to keep current value")
+    name = input(f"First name [{student[1]}]: ") or student[1]
+    surname = input(f"Last name [{student[2]}]: ") or student[2]
+    age = input(f"Age [{student[3]}]: ") or student[3]
+    class_ = input(f"Class [{student[4]}]: ") or student[4]
+    reg_date = input(f"Registration date [{student[5]}]: ") or student[5]
 
     try:
         age = int(age)
     except ValueError:
-        print("العمر يجب أن يكون رقمًا صحيحًا.")
+        print("Invalid age value. Update canceled.")
         return
 
-    try:
-        c.execute('''UPDATE students SET
-                     name=?, surname=?, age=?, class=?, registration_date=?
-                     WHERE student_number=?''',
-                  (name, surname, age, class_, reg_date, student_number))
 
-        print("تحديث الدروس (سيتم استبدال جميع الدروس السابقة):")
-        lessons = []
-        while True:
-            lesson = input("أدخل اسم الدرس (أو اترك فارغًا لإنهاء): ").strip()
-            if not lesson:
+    c.execute('''UPDATE students SET
+                name=?, surname=?, age=?, class=?, registration_date=?
+                WHERE student_number=?''',
+              (name, surname, age, class_, reg_date, student_number))
+
+
+    display_lessons()
+    current_lessons = [row[0] for row in
+                       c.execute("SELECT lesson_id FROM student_lessons WHERE student_number=?",
+                                 (student_number,)).fetchall()]
+
+    print("\nCurrent enrolled lesson IDs:", current_lessons)
+    new_lessons = []
+    while True:
+        try:
+            lesson_id = input("Enter lesson ID to add (or 'done' to finish): ")
+            if lesson_id.lower() == 'done':
                 break
-            if lesson not in lessons:
-                lessons.append(lesson)
-            else:
-                print("هذا الدرس مضاف مسبقًا.")
+            lesson_id = int(lesson_id)
 
-        c.execute("DELETE FROM lessons WHERE student_number=?", (student_number,))
-        for lesson in lessons:
-            c.execute("INSERT INTO lessons VALUES (?, ?)", (student_number, lesson))
+            if c.execute("SELECT * FROM lessons_list WHERE lesson_id=?", (lesson_id,)).fetchone():
+                new_lessons.append(lesson_id)
+            else:
+                print("Invalid lesson ID!")
+        except ValueError:
+            print("Please enter a valid number or 'done'")
+
+    try:
+        c.execute("DELETE FROM student_lessons WHERE student_number=?", (student_number,))
+        for lesson_id in new_lessons:
+            c.execute("INSERT INTO student_lessons VALUES (?, ?)",
+                      (student_number, lesson_id))
         conn.commit()
-        print("تم تحديث بيانات الطالب بنجاح.")
+        print("Student updated successfully!")
     except sqlite3.Error as e:
-        print("حدث خطأ:", e)
+        print("Error:", e)
         conn.rollback()
+
 
 def show_student():
     try:
-        student_number = int(input("رقم الطالب المراد عرضه: "))
+        student_number = int(input("Enter student number: "))
     except ValueError:
-        print("رقم الطالب يجب أن يكون رقمًا صحيحًا.")
+        print("Student number must be an integer.")
         return
 
-    c.execute("SELECT * FROM students WHERE student_number=?", (student_number,))
-    student = c.fetchone()
+    student = c.execute("SELECT * FROM students WHERE student_number=?", (student_number,)).fetchone()
     if not student:
-        print("الطالب غير موجود.")
+        print("Student not found.")
         return
 
-    c.execute("SELECT lesson_name FROM lessons WHERE student_number=?", (student_number,))
-    lessons = [row[0] for row in c.fetchall()]
+    lessons = c.execute('''SELECT l.lesson_name 
+                         FROM student_lessons sl
+                         JOIN lessons_list l ON sl.lesson_id = l.lesson_id
+                         WHERE sl.student_number = ?''',
+                        (student_number,)).fetchall()
 
-    print("\nمعلومات الطالب:")
-    print(f"الرقم: {student[0]}")
-    print(f"الاسم: {student[1]}")
-    print(f"الكنية: {student[2]}")
-    print(f"العمر: {student[3]}")
-    print(f"الصف: {student[4]}")
-    print(f"تاريخ التسجيل: {student[5]}")
-    print("الدروس:", ", ".join(lessons) if lessons else "لا يوجد دروس.")
+    print("\nStudent Information:")
+    print(f"Number: {student[0]}")
+    print(f"Name: {student[1]} {student[2]}")
+    print(f"Age: {student[3]}")
+    print(f"Class: {student[4]}")
+    print(f"Registration Date: {student[5]}")
+    print("Enrolled Lessons:", ", ".join([lesson[0] for lesson in lessons]) if lessons else "None")
 
-while True:
-    print("\nالرجاء اختيار العملية:")
-    print("a - إضافة طالب")
-    print("d - حذف طالب")
-    print("u - تعديل طالب")
-    print("s - عرض طالب")
-    print("أي حرف آخر - الخروج")
-    choice = input("اختيارك: ").lower()
 
-    if choice == 'a':
-        add_student()
-    elif choice == 'd':
-        delete_student()
-    elif choice == 'u':
-        update_student()
-    elif choice == 's':
-        show_student()
-    else:
-        print("الخروج من البرنامج...")
-        break
+def main_menu():
+    while True:
+        print("\nMain Menu:")
+        print("1. Student Management")
+        print("2. Lesson Management")
+        print("3. Exit")
+        choice = input("Select option: ")
 
+        if choice == '1':
+            student_menu()
+        elif choice == '2':
+            lesson_menu()
+        elif choice == '3':
+            break
+        else:
+            print("Invalid choice!")
+
+
+def student_menu():
+    while True:
+        print("\nStudent Management:")
+        print("a. Add Student")
+        print("d. Delete Student")
+        print("u. Update Student")
+        print("s. Show Student")
+        print("b. Back to Main Menu")
+        choice = input("Select option: ").lower()
+
+        if choice == 'a':
+            add_student()
+        elif choice == 'd':
+            delete_student()
+        elif choice == 'u':
+            update_student()
+        elif choice == 's':
+            show_student()
+        elif choice == 'b':
+            break
+        else:
+            print("Invalid choice!")
+
+
+def lesson_menu():
+    while True:
+        print("\nLesson Management:")
+        print("a. Add Lesson")
+        print("u. Update Lesson")
+        print("d. Delete Lesson")
+        print("l. List Lessons")
+        print("b. Back to Main Menu")
+        choice = input("Select option: ").lower()
+
+        if choice == 'a':
+            add_lesson()
+        elif choice == 'u':
+            update_lesson()
+        elif choice == 'd':
+            delete_lesson()
+        elif choice == 'l':
+            display_lessons()
+        elif choice == 'b':
+            break
+        else:
+            print("Invalid choice!")
+
+
+
+main_menu()
 conn.close()
