@@ -1,91 +1,119 @@
 نظام إدارة المدرسة
 
-هذا المشروع عبارة عن نظام بسيط لإدارة الطلاب والدروس في مدرسة. يتم تخزين البيانات في قاعدة بيانات SQLite، ويتيح النظام للمستخدم إضافة طلاب، حذفهم، تعديل معلوماتهم، وعرض معلوماتهم.
+الوصف
 
-الميزات:
+هذا المشروع هو نظام إدارة المدارس الذي يسمح للمدراء بإدارة الطلاب والدروس في المدرسة. تم بناء النظام باستخدام لغة بايثون وقاعدة البيانات SQLite لإدارة البيانات. يوفر النظام وظائف لإضافة، تحديث، حذف، وعرض الطلاب والدروس، بالإضافة إلى إدارة العلاقة بين الطلاب والدروس المسجلين فيها.
 
-إضافة طالب: إدخال بيانات الطالب (الرقم، الاسم، الكنية، العمر، الصف، تاريخ التسجيل) والدروس التي يسجل فيها.
+الميزات
 
-حذف طالب: حذف طالب من قاعدة البيانات بناءً على رقمه.
+إدارة الطلاب:
 
-تعديل طالب: تحديث بيانات الطالب والدروس المسجل فيها.
+إضافة طالب جديد برقم طالب فريد مكون من 10 أرقام.
 
-عرض معلومات الطالب: عرض بيانات الطالب والدروس المسجل فيها.
+تحديث معلومات الطالب (الاسم، الكنية، العمر، الصف، تاريخ التسجيل).
 
-هيكل قاعدة البيانات:
+حذف طالب.
 
-جدول students:
+عرض تفاصيل الطالب والدروس المسجل فيها.
 
-student_number: رقم الطالب (مفتاح أساسي).
+إدارة الدروس:
 
-name: اسم الطالب.
+إضافة درس جديد.
 
-surname: كنية الطالب.
+تحديث درس موجود.
 
-age: عمر الطالب.
+حذف درس.
 
-class: الصف الذي يدرس فيه الطالب.
+عرض جميع الدروس المتاحة.
 
-registration_date: تاريخ تسجيل الطالب.
+قاعدة البيانات:
 
-جدول lessons:
+يستخدم SQLite لتخزين البيانات في ثلاث جداول:
 
-student_number: رقم الطالب (مفتاح خارجي).
+students: لتخزين معلومات الطلاب.
 
-lesson_name: اسم الدرس.
+lessons_list: لتخزين الدروس المتاحة.
 
-المتطلبات:
+student_lessons: لإدارة العلاقة المتعددة بين الطلاب والدروس.
 
-Python 3.x
+كيفية الاستخدام
 
-مكتبة sqlite3 (مضمنة مع Python).
+قم بتنزيل المشروع أو استنساخه من المستودع.
 
-المؤلف:
+تأكد من تثبيت بايثون 3.x.
 
-المهدي القرني
+قم بتشغيل البرنامج school_management.py.
 
+اتبع القائمة الظاهرة على الشاشة لإجراء العمليات:
+
+اختر إدارة الطلاب لإدارة الطلاب.
+
+اختر إدارة الدروس لإدارة الدروس.
+
+اختر خروج لإغلاق البرنامج.
+
+المتطلبات
+
+بايثون 3.x
+
+SQLite3 (مضمن مع بايثون)
 
 School Management System
 
-The system functions to manage school students together with their lesson scheduling activities. The system stores data within an SQLite database structure while enabling users to execute operations such as student addition and deletion and information updating as well as data details viewing.
+Description
+
+This project is a School Management System that allows administrators to manage students and lessons in a school. The system is built using Python and SQLite for database management. It provides functionalities to add, update, delete, and view students and lessons, as well as manage the relationship between students and their enrolled lessons.
 
 Features
 
-Add a student: Enter student details (number, name, surname, age, class, registration date) and the lessons they are enrolled in.
+Student Management:
 
-Delete a student: Remove a student from the database based on their number.
+Add a new student with a unique 10-digit student number.
 
-Update a student: Modify student details and their enrolled lessons.
+Update student information (name, surname, age, class, registration date).
 
-View student information: Display student details and their enrolled lessons.
+Delete a student.
 
-Database Structure
+View student details and enrolled lessons.
 
-students table:
+Lesson Management:
 
-student_number: Student number (primary key).
+Add a new lesson.
 
-name: Student's name.
+Update an existing lesson.
 
-surname: Student's surname.
+Delete a lesson.
 
-age: Student's age.
+View all available lessons.
 
-class: Student's class.
+Database:
 
-registration_date: Student's registration date.
+Uses SQLite to store data in three tables:
 
-lessons table:
+students: Stores student information.
 
-student_number: Student number (foreign key).
+lessons_list: Stores available lessons.
 
-lesson_name: Lesson name.
+student_lessons: Manages the many-to-many relationship between students and lessons.
+
+How to Use
+
+Clone the repository or download the project files.
+
+Ensure you have Python 3.x installed.
+
+Run the script school_management.py.
+
+Follow the on-screen menu to perform operations:
+
+Choose Student Management to manage students.
+
+Choose Lesson Management to manage lessons.
+
+Choose Exit to close the program.
 
 Requirements
 
 Python 3.x
 
-sqlite3 library (included with Python).
-
-Author
-Al Mahdi Al Qarni
+SQLite3 (included with Python)
