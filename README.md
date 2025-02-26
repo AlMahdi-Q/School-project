@@ -42,7 +42,7 @@ student_lessons: لإدارة العلاقة المتعددة بين الطلا�
 
 تأكد من تثبيت بايثون 3.x.
 
-قم بتشغيل البرنامج school_management.py.
+قم بتشغيل البرنامج index.py.
 
 اتبع القائمة الظاهرة على الشاشة لإجراء العمليات:
 
@@ -102,7 +102,7 @@ Clone the repository or download the project files.
 
 Ensure you have Python 3.x installed.
 
-Run the script school_management.py.
+Run the script index.py.
 
 Follow the on-screen menu to perform operations:
 
